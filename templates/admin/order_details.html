@@ -1,4 +1,4 @@
-```html
+
 {% extends "admin/base.html" %}
 
 {% block title %}Order Details | ShopZone Admin{% endblock %}
@@ -6,21 +6,15 @@
 {% block content %}
 
 <div class="page-header">
-
     <div>
-        <h1>Order #{{ order.id }}</h1>
+        <h1>Order #{{ order.orderid }}</h1>
         <p>View complete order information.</p>
     </div>
 
-    <a
-        href="{{ url_for('admin_orders') }}"
-        class="btn btn-secondary"
-    >
+    <a href="{{ url_for('admin_orders') }}" class="btn btn-secondary">
         Back to Orders
     </a>
-
 </div>
-
 
 <!-- Order Information -->
 
@@ -29,7 +23,6 @@
     <!-- Customer Information -->
 
     <div class="details-card">
-
         <h2>Customer Information</h2>
 
         <div class="detail-row">
@@ -44,21 +37,18 @@
 
         <div class="detail-row">
             <span>Phone</span>
-            <strong>{{ order.customer_phone }}</strong>
+            <strong>{{ order.phone }}</strong>
         </div>
-
     </div>
-
 
     <!-- Order Information -->
 
     <div class="details-card">
-
         <h2>Order Information</h2>
 
         <div class="detail-row">
             <span>Order ID</span>
-            <strong>#{{ order.id }}</strong>
+            <strong>#{{ order.orderid }}</strong>
         </div>
 
         <div class="detail-row">
@@ -74,113 +64,59 @@
         <div class="detail-row">
             <span>Payment Status</span>
 
-            {% if order.payment_status == "PAID" %}
+            {% if order.payment_status|upper == "PAID" %}
+                <span class="payment-status paid">Paid</span>
 
-                <span class="payment-status paid">
-                    Paid
-                </span>
-
-            {% elif order.payment_status == "FAILED" %}
-
-                <span class="payment-status failed">
-                    Failed
-                </span>
+            {% elif order.payment_status|upper == "FAILED" %}
+                <span class="payment-status failed">Failed</span>
 
             {% else %}
-
-                <span class="payment-status pending">
-                    Pending
-                </span>
-
+                <span class="payment-status pending">Pending</span>
             {% endif %}
-
         </div>
-
     </div>
 
 </div>
-
 
 <!-- Delivery Address -->
 
 <div class="details-card">
-
     <h2>Delivery Address</h2>
 
     <div class="address">
-
         <p>
             <strong>{{ order.customer_name }}</strong>
         </p>
 
-        <p>
-            {{ order.address }}
-        </p>
+        <p>{{ order.address }}</p>
 
-        <p>
-            {{ order.city }},
-            {{ order.state }}
-            - {{ order.pincode }}
-        </p>
-
-        <p>
-            Phone: {{ order.customer_phone }}
-        </p>
-
+        <p>Phone: {{ order.phone }}</p>
     </div>
-
 </div>
-
 
 <!-- Ordered Products -->
 
 <div class="details-card">
-
     <h2>Ordered Products</h2>
 
     <div class="table-container">
-
         <table class="order-items-table">
 
             <thead>
-
                 <tr>
                     <th>Product</th>
                     <th>Price</th>
                     <th>Quantity</th>
                     <th>Total</th>
                 </tr>
-
             </thead>
 
             <tbody>
-
-                {% for item in order_items %}
-
+                {% for item in items %}
                 <tr>
 
                     <td>
-
-                        <div class="order-product">
-
-                            {% if item.image %}
-
-                            <img
-                                src="{{ url_for(
-                                    'static',
-                                    filename='uploads/' + item.image
-                                ) }}"
-                                alt="{{ item.product_name }}"
-                            >
-
-                            {% endif %}
-
-                            <span>
-                                {{ item.product_name }}
-                            </span>
-
-                        </div>
-
+                        {{ item.productname }}
                     </td>
 
                     <td>
@@ -192,21 +128,20 @@
                     </td>
 
                     <td>
-                        ₹{{ item.price * item.quantity }}
+                        ₹{{ item.subtotal }}
                     </td>
 
                 </tr>
-
+                {% else %}
+                <tr>
+                    <td colspan="4">No products found for this order.</td>
+                </tr>
                 {% endfor %}
-
             </tbody>
 
         </table>
-
     </div>
-
 </div>
-
 
 <!-- Order Summary -->
 
@@ -224,101 +159,58 @@
 
     <div class="summary-row total">
         <span>Total Amount</span>
-        <strong>₹{{ order.total_amount }}</strong>
+        <strong>₹{{ order.total }}</strong>
     </div>
 
 </div>
 
-
 <!-- Update Order Status -->
 
 <div class="details-card">
-
     <h2>Update Order Status</h2>
 
     <form
         method="POST"
-        action="{{ url_for(
-            'admin_update_order',
-            order_id=order.id
-        ) }}"
+        action="{{ url_for('admin_edit_order', order_id=order.orderid) }}"
     >
 
         <div class="status-update">
 
             <div class="form-group">
+                <label for="status">Order Status</label>
 
-                <label for="status">
-                    Order Status
-                </label>
+                <select id="status" name="status" required>
 
-                <select
-                    id="status"
-                    name="status"
-                    required
-                >
-
-                    <option
-                        value="PENDING"
-                        {% if order.status == "PENDING" %}
-                            selected
-                        {% endif %}
-                    >
+                    <option value="pending"
+                        {% if order.status|lower == "pending" %}selected{% endif %}>
                         Pending
                     </option>
 
-                    <option
-                        value="PROCESSING"
-                        {% if order.status == "PROCESSING" %}
-                            selected
-                        {% endif %}
-                    >
-                        Processing
-                    </option>
-
-                    <option
-                        value="SHIPPED"
-                        {% if order.status == "SHIPPED" %}
-                            selected
-                        {% endif %}
-                    >
+                    <option value="shipped"
+                        {% if order.status|lower == "shipped" %}selected{% endif %}>
                         Shipped
                     </option>
 
-                    <option
-                        value="DELIVERED"
-                        {% if order.status == "DELIVERED" %}
-                            selected
-                        {% endif %}
-                    >
+                    <option value="delivered"
+                        {% if order.status|lower == "delivered" %}selected{% endif %}>
                         Delivered
                     </option>
 
-                    <option
-                        value="CANCELLED"
-                        {% if order.status == "CANCELLED" %}
-                            selected
-                        {% endif %}
-                    >
+                    <option value="cancelled"
+                        {% if order.status|lower == "cancelled" %}selected{% endif %}>
                         Cancelled
                     </option>
 
                 </select>
-
             </div>
 
-            <button
-                type="submit"
-                class="btn btn-primary"
-            >
+            <button type="submit" class="btn btn-primary">
                 Update Status
             </button>
 
         </div>
 
     </form>
-
 </div>
 
 {% endblock %}
-```

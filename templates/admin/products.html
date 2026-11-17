@@ -242,7 +242,7 @@
         </h2>
 
         <span>
-            Total Products: {{ total }}
+            Total Products: {{ products|length }}
         </span>
 
     </div>
@@ -451,7 +451,7 @@
                                     method="POST"
                                     action="{{ url_for(
                                         'admin_activate_product',
-                                        productid=product.productid
+                                        product_id=product.productid
                                     ) }}"
                                 >
 
@@ -632,4 +632,3 @@
 </div>
 
 {% endblock %}
-
